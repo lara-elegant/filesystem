@@ -254,7 +254,7 @@ class FilesystemManager implements FactoryContract
      */
     protected function getConfig($name)
     {
-        return $this->app['config']["filesystems.disks.{$name}"] ?: [];
+        return $this->app->config['filesystems']['disks'][$name] ?: [];
     }
 
     /**
@@ -264,7 +264,7 @@ class FilesystemManager implements FactoryContract
      */
     public function getDefaultDriver()
     {
-        return $this->app['config']['filesystems.default'];
+        return $this->app->config['filesystems']['default'];
     }
 
     /**
