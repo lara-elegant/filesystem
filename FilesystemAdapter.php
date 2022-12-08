@@ -14,7 +14,6 @@ use League\Flysystem\Adapter\Local as LocalAdapter;
 use League\Flysystem\AdapterInterface;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Sftp\SftpAdapter as Sftp;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FilesystemAdapter
 {
@@ -90,53 +89,6 @@ class FilesystemAdapter
         } catch (FileNotFoundException $e) {
             throw new ContractFileNotFoundException($e->getMessage(), $e->getCode(), $e);
         }
-    }
-
-    /**
-     * Create a streamed response for a given file.
-     *
-     * @param  string  $path
-     * @param  string|null  $name
-     * @param  array|null  $headers
-     * @param  string|null  $disposition
-     * @return \Symfony\Component\HttpFoundation\StreamedResponse
-     */
-    public function response($path, $name = null, array $headers = [], $disposition = 'inline')
-    {
-        $response = new StreamedResponse;
-
-        $filename = $name ?? basename($path);
-
-        $disposition = $response->headers->makeDisposition(
-            $disposition, $filename, $this->fallbackName($filename)
-        );
-
-        $response->headers->replace($headers + [
-                'Content-Type' => $this->mimeType($path),
-                'Content-Length' => $this->size($path),
-                'Content-Disposition' => $disposition,
-            ]);
-
-        $response->setCallback(function () use ($path) {
-            $stream = $this->readStream($path);
-            fpassthru($stream);
-            fclose($stream);
-        });
-
-        return $response;
-    }
-
-    /**
-     * Create a streamed download response for a given file.
-     *
-     * @param  string  $path
-     * @param  string|null  $name
-     * @param  array|null  $headers
-     * @return \Symfony\Component\HttpFoundation\StreamedResponse
-     */
-    public function download($path, $name = null, array $headers = [])
-    {
-        return $this->response($path, $name, $headers, 'attachment');
     }
 
     /**
